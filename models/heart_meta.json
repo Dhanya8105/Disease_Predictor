@@ -1,0 +1,22 @@
+{
+  "disease": "Heart Disease",
+  "best_model": "RandomForest",
+  "feature_names": [
+    "age",
+    "sex",
+    "cp",
+    "trestbps",
+    "chol",
+    "fbs",
+    "restecg",
+    "thalach",
+    "exang",
+    "oldpeak",
+    "slope",
+    "ca",
+    "thal"
+  ],
+  "target_meaning": "1 = condition present, 0 = condition absent",
+  "n_train": 241,
+  "n_test": 61
+}

@@ -1,0 +1,10 @@
+Heart Disease -- Best Model: RandomForest
+
+              precision    recall  f1-score   support
+
+  No Disease       0.90      0.64      0.75        28
+     Disease       0.76      0.94      0.84        33
+
+    accuracy                           0.80        61
+   macro avg       0.83      0.79      0.79        61
+weighted avg       0.82      0.80      0.80        61

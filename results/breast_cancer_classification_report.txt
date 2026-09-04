@@ -1,0 +1,10 @@
+Breast Cancer -- Best Model: LogisticRegression
+
+              precision    recall  f1-score   support
+
+  No Disease       0.96      0.99      0.97        72
+     Disease       0.97      0.93      0.95        42
+
+    accuracy                           0.96       114
+   macro avg       0.97      0.96      0.96       114
+weighted avg       0.97      0.96      0.96       114

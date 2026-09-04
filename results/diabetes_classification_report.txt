@@ -1,0 +1,10 @@
+Diabetes -- Best Model: XGBoost
+
+              precision    recall  f1-score   support
+
+  No Disease       0.81      0.84      0.82       100
+     Disease       0.68      0.63      0.65        54
+
+    accuracy                           0.77       154
+   macro avg       0.74      0.73      0.74       154
+weighted avg       0.76      0.77      0.76       154

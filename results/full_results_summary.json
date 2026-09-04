@@ -1,0 +1,212 @@
+{
+  "diabetes": {
+    "dataset": "Diabetes",
+    "best_model": "XGBoost",
+    "all_model_results": {
+      "LogisticRegression": {
+        "best_params": {
+          "C": 0.1,
+          "penalty": "l2",
+          "solver": "lbfgs"
+        },
+        "cv_roc_auc_mean": 0.8443,
+        "test_metrics": {
+          "accuracy": 0.6883,
+          "precision": 0.5652,
+          "recall": 0.4815,
+          "f1_score": 0.52,
+          "roc_auc": 0.8106
+        },
+        "train_time_sec": 1.29
+      },
+      "RandomForest": {
+        "best_params": {
+          "max_depth": 5,
+          "min_samples_split": 5,
+          "n_estimators": 400
+        },
+        "cv_roc_auc_mean": 0.8401,
+        "test_metrics": {
+          "accuracy": 0.7273,
+          "precision": 0.6429,
+          "recall": 0.5,
+          "f1_score": 0.5625,
+          "roc_auc": 0.8059
+        },
+        "train_time_sec": 2.56
+      },
+      "SVM": {
+        "best_params": {
+          "C": 1,
+          "gamma": "scale",
+          "kernel": "linear"
+        },
+        "cv_roc_auc_mean": 0.8445,
+        "test_metrics": {
+          "accuracy": 0.7013,
+          "precision": 0.5909,
+          "recall": 0.4815,
+          "f1_score": 0.5306,
+          "roc_auc": 0.8131
+        },
+        "train_time_sec": 0.19
+      },
+      "XGBoost": {
+        "best_params": {
+          "learning_rate": 0.05,
+          "max_depth": 3,
+          "n_estimators": 200
+        },
+        "cv_roc_auc_mean": 0.8184,
+        "test_metrics": {
+          "accuracy": 0.7662,
+          "precision": 0.68,
+          "recall": 0.6296,
+          "f1_score": 0.6538,
+          "roc_auc": 0.8274
+        },
+        "train_time_sec": 0.4
+      }
+    }
+  },
+  "heart": {
+    "dataset": "Heart Disease",
+    "best_model": "RandomForest",
+    "all_model_results": {
+      "LogisticRegression": {
+        "best_params": {
+          "C": 0.1,
+          "penalty": "l2",
+          "solver": "lbfgs"
+        },
+        "cv_roc_auc_mean": 0.8944,
+        "test_metrics": {
+          "accuracy": 0.7705,
+          "precision": 0.7436,
+          "recall": 0.8788,
+          "f1_score": 0.8056,
+          "roc_auc": 0.8745
+        },
+        "train_time_sec": 0.09
+      },
+      "RandomForest": {
+        "best_params": {
+          "max_depth": 5,
+          "min_samples_split": 2,
+          "n_estimators": 400
+        },
+        "cv_roc_auc_mean": 0.9006,
+        "test_metrics": {
+          "accuracy": 0.8033,
+          "precision": 0.7561,
+          "recall": 0.9394,
+          "f1_score": 0.8378,
+          "roc_auc": 0.9015
+        },
+        "train_time_sec": 2.16
+      },
+      "SVM": {
+        "best_params": {
+          "C": 1,
+          "gamma": "scale",
+          "kernel": "linear"
+        },
+        "cv_roc_auc_mean": 0.8966,
+        "test_metrics": {
+          "accuracy": 0.8033,
+          "precision": 0.7561,
+          "recall": 0.9394,
+          "f1_score": 0.8378,
+          "roc_auc": 0.882
+        },
+        "train_time_sec": 0.08
+      },
+      "XGBoost": {
+        "best_params": {
+          "learning_rate": 0.05,
+          "max_depth": 3,
+          "n_estimators": 400
+        },
+        "cv_roc_auc_mean": 0.8816,
+        "test_metrics": {
+          "accuracy": 0.7705,
+          "precision": 0.7568,
+          "recall": 0.8485,
+          "f1_score": 0.8,
+          "roc_auc": 0.8528
+        },
+        "train_time_sec": 0.38
+      }
+    }
+  },
+  "breast_cancer": {
+    "dataset": "Breast Cancer",
+    "best_model": "LogisticRegression",
+    "all_model_results": {
+      "LogisticRegression": {
+        "best_params": {
+          "C": 1,
+          "penalty": "l2",
+          "solver": "lbfgs"
+        },
+        "cv_roc_auc_mean": 0.9958,
+        "test_metrics": {
+          "accuracy": 0.9649,
+          "precision": 0.975,
+          "recall": 0.9286,
+          "f1_score": 0.9512,
+          "roc_auc": 0.996
+        },
+        "train_time_sec": 0.04
+      },
+      "RandomForest": {
+        "best_params": {
+          "max_depth": null,
+          "min_samples_split": 2,
+          "n_estimators": 200
+        },
+        "cv_roc_auc_mean": 0.9889,
+        "test_metrics": {
+          "accuracy": 0.9649,
+          "precision": 1.0,
+          "recall": 0.9048,
+          "f1_score": 0.95,
+          "roc_auc": 0.9942
+        },
+        "train_time_sec": 2.66
+      },
+      "SVM": {
+        "best_params": {
+          "C": 1,
+          "gamma": "scale",
+          "kernel": "rbf"
+        },
+        "cv_roc_auc_mean": 0.9948,
+        "test_metrics": {
+          "accuracy": 0.9737,
+          "precision": 1.0,
+          "recall": 0.9286,
+          "f1_score": 0.963,
+          "roc_auc": 0.9947
+        },
+        "train_time_sec": 0.07
+      },
+      "XGBoost": {
+        "best_params": {
+          "learning_rate": 0.1,
+          "max_depth": 3,
+          "n_estimators": 200
+        },
+        "cv_roc_auc_mean": 0.994,
+        "test_metrics": {
+          "accuracy": 0.9561,
+          "precision": 1.0,
+          "recall": 0.881,
+          "f1_score": 0.9367,
+          "roc_auc": 0.9937
+        },
+        "train_time_sec": 0.65
+      }
+    }
+  }
+}

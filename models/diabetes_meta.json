@@ -1,0 +1,17 @@
+{
+  "disease": "Diabetes",
+  "best_model": "XGBoost",
+  "feature_names": [
+    "pregnancies",
+    "glucose",
+    "blood_pressure",
+    "skin_thickness",
+    "insulin",
+    "bmi",
+    "diabetes_pedigree",
+    "age"
+  ],
+  "target_meaning": "1 = condition present, 0 = condition absent",
+  "n_train": 614,
+  "n_test": 154
+}

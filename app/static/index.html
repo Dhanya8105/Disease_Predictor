@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnostic Panel — Disease Risk Screening</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF1F0;
+    --paper-line:#D7DEDA;
+    --ink:#16233B;
+    --ink-soft:#4A5568;
+    --normal:#2F8F5B;
+    --normal-bg:#E4F3EA;
+    --alert:#B8433B;
+    --alert-bg:#F7E6E4;
+    --amber:#B8842E;
+    --card:#FAFBFA;
+    --mono:'IBM Plex Mono', monospace;
+    --serif:'Source Serif 4', serif;
+    --sans:'Inter', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px;
+    color:var(--ink);
+    font-family:var(--sans);
+    min-height:100vh;
+  }
+  .wrap{max-width:960px; margin:0 auto; padding:40px 24px 80px;}
+
+  header{margin-bottom:32px;}
+  .eyebrow{
+    font-family:var(--mono); font-size:12px; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--ink-soft); display:flex; align-items:center; gap:10px; margin-bottom:10px;
+  }
+  .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--normal); box-shadow:0 0 0 3px var(--normal-bg);}
+  h1{
+    font-family:var(--serif); font-weight:700; font-size:clamp(30px, 4.4vw, 44px);
+    margin:0 0 8px; letter-spacing:-0.01em; line-height:1.05;
+  }
+  .sub{color:var(--ink-soft); font-size:15px; max-width:560px; line-height:1.5;}
+
+  .tabs{display:flex; gap:6px; margin:30px 0 22px; border-bottom:1.5px solid var(--paper-line); flex-wrap:wrap;}
+  .tab{
+    font-family:var(--mono); font-size:13px; letter-spacing:0.04em;
+    padding:11px 18px; cursor:pointer; color:var(--ink-soft);
+    border-bottom:2.5px solid transparent; margin-bottom:-1.5px;
+    transition:color .15s ease, border-color .15s ease;
+    background:none; border-top:none; border-left:none; border-right:none;
+  }
+  .tab:hover{color:var(--ink);}
+  .tab.active{color:var(--ink); border-color:var(--ink); font-weight:600;}
+
+  .panel{
+    background:var(--card); border:1px solid var(--paper-line); border-radius:3px;
+    padding:28px 30px 30px; box-shadow: 0 1px 2px rgba(22,35,59,0.04);
+  }
+  .panel-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px; flex-wrap:wrap; gap:8px;}
+  .panel-head h2{font-family:var(--serif); font-size:22px; margin:0; font-weight:600;}
+  .model-tag{
+    font-family:var(--mono); font-size:11px; color:var(--ink-soft);
+    border:1px solid var(--paper-line); padding:3px 9px; border-radius:20px; white-space:nowrap;
+  }
+  .panel-desc{color:var(--ink-soft); font-size:13.5px; margin:2px 0 22px;}
+
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:14px 18px; margin-bottom:22px;}
+  .field label{
+    display:block; font-family:var(--mono); font-size:11px; letter-spacing:0.03em;
+    color:var(--ink-soft); text-transform:uppercase; margin-bottom:6px;
+  }
+  .field input{
+    width:100%; font-family:var(--mono); font-size:14.5px; color:var(--ink);
+    background:#fff; border:1.4px solid var(--paper-line); border-radius:2px;
+    padding:9px 10px; transition:border-color .15s ease;
+  }
+  .field input:focus{outline:none; border-color:var(--ink);}
+
+  .actions{display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  button.run{
+    font-family:var(--mono); font-size:13px; font-weight:600; letter-spacing:0.03em;
+    background:var(--ink); color:#fff; border:none; padding:12px 22px; border-radius:2px;
+    cursor:pointer; transition:background .15s ease;
+  }
+  button.run:hover{background:#0d1830;}
+  button.run:disabled{background:#9aa5b5; cursor:not-allowed;}
+  .fill-sample{
+    font-family:var(--mono); font-size:12px; color:var(--ink-soft); background:none;
+    border:1px dashed var(--paper-line); padding:11px 14px; border-radius:2px; cursor:pointer;
+  }
+  .fill-sample:hover{border-color:var(--ink-soft); color:var(--ink);}
+
+  .result{margin-top:26px; display:none;}
+  .result.show{display:block; animation:rise .35s ease;}
+  @keyframes rise{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  .strip{
+    border:1.5px solid var(--paper-line); border-left-width:5px; border-radius:2px;
+    padding:18px 20px; display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap;
+  }
+  .strip.normal{border-left-color:var(--normal); background:var(--normal-bg);}
+  .strip.alert{border-left-color:var(--alert); background:var(--alert-bg);}
+  .verdict{font-family:var(--serif); font-weight:700; font-size:19px;}
+  .verdict.normal{color:var(--normal);}
+  .verdict.alert{color:var(--alert);}
+  .prob-block{text-align:right;}
+  .prob-num{font-family:var(--mono); font-size:26px; font-weight:600;}
+  .prob-label{font-family:var(--mono); font-size:10.5px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.06em;}
+
+  .gauge{height:8px; background:#dfe4e1; border-radius:4px; margin-top:14px; overflow:hidden; position:relative;}
+  .gauge-fill{height:100%; border-radius:4px; transition:width .5s ease;}
+  .gauge-fill.normal{background:var(--normal);}
+  .gauge-fill.alert{background:var(--alert);}
+
+  footer{margin-top:36px; font-family:var(--mono); font-size:11px; color:var(--ink-soft); line-height:1.6;}
+  footer .warn{color:var(--amber);}
+  .err{color:var(--alert); font-family:var(--mono); font-size:12.5px; margin-top:14px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow"><span class="dot"></span>MODEL-BACKED SCREENING TOOL</div>
+    <h1>Disease Risk Screening Panel</h1>
+    <div class="sub">Enter patient values below. Predictions come from classifiers trained and cross-validated on real clinical datasets — not simulated output.</div>
+  </header>
+
+  <div class="tabs" id="tabs"></div>
+  <div class="panel" id="panel">
+    <div class="panel-head">
+      <h2 id="disease-title">Loading…</h2>
+      <span class="model-tag" id="model-tag"></span>
+    </div>
+    <div class="panel-desc" id="disease-desc"></div>
+    <div class="grid" id="field-grid"></div>
+    <div class="actions">
+      <button class="run" id="run-btn">Run screening</button>
+      <button class="fill-sample" id="sample-btn">Fill sample patient</button>
+    </div>
+    <div class="err" id="err"></div>
+    <div class="result" id="result">
+      <div class="strip" id="strip">
+        <div>
+          <div class="verdict" id="verdict"></div>
+          <div style="font-family:var(--mono); font-size:12px; color:var(--ink-soft); margin-top:4px;">Model: <span id="model-used"></span></div>
+        </div>
+        <div class="prob-block">
+          <div class="prob-num" id="prob-num"></div>
+          <div class="prob-label">predicted probability</div>
+        </div>
+      </div>
+      <div class="gauge"><div class="gauge-fill" id="gauge-fill"></div></div>
+    </div>
+  </div>
+
+  <footer>
+    Trained on the UCI Pima Indians Diabetes, UCI Cleveland Heart Disease, and UCI Breast Cancer Wisconsin (Diagnostic) datasets.<br>
+    <span class="warn">This tool is a portfolio / educational demonstration, not a certified diagnostic device. It does not replace professional medical evaluation.</span>
+  </footer>
+</div>
+
+<script>
+const FIELD_LABELS = {
+  pregnancies:"Pregnancies", glucose:"Glucose (mg/dL)", blood_pressure:"Blood Pressure (mm Hg)",
+  skin_thickness:"Skin Thickness (mm)", insulin:"Insulin (mu U/mL)", bmi:"BMI",
+  diabetes_pedigree:"Diabetes Pedigree", age:"Age (yrs)",
+  sex:"Sex (1=M, 0=F)", cp:"Chest Pain Type (0-3)", trestbps:"Resting BP (mm Hg)",
+  chol:"Cholesterol (mg/dL)", fbs:"Fasting Blood Sugar >120 (1/0)", restecg:"Resting ECG (0-2)",
+  thalach:"Max Heart Rate", exang:"Exercise Angina (1/0)", oldpeak:"ST Depression",
+  slope:"ST Slope (0-2)", ca:"Major Vessels (0-3)", thal:"Thalassemia (0-3)",
+};
+
+const SAMPLES = {
+  diabetes: {pregnancies:2, glucose:130, blood_pressure:70, skin_thickness:28, insulin:100, bmi:32.5, diabetes_pedigree:0.45, age:38},
+  heart: {age:58, sex:1, cp:2, trestbps:140, chol:230, fbs:0, restecg:1, thalach:150, exang:0, oldpeak:1.2, slope:1, ca:0, thal:2},
+  breast_cancer: null, // filled dynamically from feature list (30 features) with typical benign-ish values
+};
+
+let DISEASES = {};
+let current = null;
+
+async function init(){
+  const res = await fetch('/api/diseases');
+  DISEASES = await res.json();
+  const tabs = document.getElementById('tabs');
+  Object.keys(DISEASES).forEach((key, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'tab' + (i===0 ? ' active' : '');
+    btn.textContent = DISEASES[key].disease;
+    btn.dataset.key = key;
+    btn.onclick = () => selectDisease(key);
+    tabs.appendChild(btn);
+  });
+  selectDisease(Object.keys(DISEASES)[0]);
+}
+
+function selectDisease(key){
+  current = key;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.key === key));
+  const info = DISEASES[key];
+  document.getElementById('disease-title').textContent = info.disease + ' Risk';
+  document.getElementById('model-tag').textContent = 'model: ' + info.best_model;
+  document.getElementById('disease-desc').textContent =
+    `Enter the ${info.feature_names.length} clinical features below to screen for ${info.disease.toLowerCase()}.`;
+  document.getElementById('result').classList.remove('show');
+  document.getElementById('err').textContent = '';
+
+  const grid = document.getElementById('field-grid');
+  grid.innerHTML = '';
+  info.feature_names.forEach(f => {
+    const div = document.createElement('div');
+    div.className = 'field';
+    const label = FIELD_LABELS[f] || f;
+    div.innerHTML = `<label>${label}</label><input type="number" step="any" data-field="${f}" placeholder="0.0">`;
+    grid.appendChild(div);
+  });
+}
+
+document.getElementById('sample-btn').onclick = () => {
+  const info = DISEASES[current];
+  let sample = SAMPLES[current];
+  if (!sample && current === 'breast_cancer') {
+    // reasonable mid-range placeholder values across all 30 features
+    sample = {};
+    info.feature_names.forEach(f => sample[f] = 14.0);
+  }
+  document.querySelectorAll('#field-grid input').forEach(inp => {
+    const f = inp.dataset.field;
+    if (sample[f] !== undefined) inp.value = sample[f];
+  });
+};
+
+document.getElementById('run-btn').onclick = async () => {
+  const errEl = document.getElementById('err');
+  errEl.textContent = '';
+  const inputs = document.querySelectorAll('#field-grid input');
+  const payload = {};
+  for (const inp of inputs) {
+    if (inp.value === '') { errEl.textContent = 'Please fill in every field before running the screening.'; return; }
+    payload[inp.dataset.field] = inp.value;
+  }
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true; btn.textContent = 'Running…';
+  try {
+    const res = await fetch(`/api/predict/${current}`, {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error || 'Prediction failed.'; return; }
+    showResult(data);
+  } catch(e) {
+    errEl.textContent = 'Could not reach the prediction server.';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Run screening';
+  }
+};
+
+function showResult(data){
+  const isAlert = data.prediction === 1;
+  const result = document.getElementById('result');
+  const strip = document.getElementById('strip');
+  strip.className = 'strip ' + (isAlert ? 'alert' : 'normal');
+  const verdict = document.getElementById('verdict');
+  verdict.className = 'verdict ' + (isAlert ? 'alert' : 'normal');
+  verdict.textContent = (isAlert ? '⚠ ' : '✓ ') + data.prediction_label;
+  document.getElementById('model-used').textContent = data.model_used;
+  document.getElementById('prob-num').textContent = (data.probability*100).toFixed(1) + '%';
+  const fill = document.getElementById('gauge-fill');
+  fill.className = 'gauge-fill ' + (isAlert ? 'alert' : 'normal');
+  fill.style.width = (data.probability*100).toFixed(1) + '%';
+  result.classList.add('show');
+}
+
+init();
+</script>
+</body>
+</html>
