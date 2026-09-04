@@ -80,4 +80,5 @@ if __name__ == "__main__":
     for key in DISEASES:
         load_disease(key)  # warm cache / fail fast if a model is missing
     print("Models loaded:", DISEASES)
-    app.run(host="0.0.0.0", port=5050, debug=False)
+    port = int(os.environ.get("PORT", 5050))
+    app.run(host="0.0.0.0", port=port, debug=False)
