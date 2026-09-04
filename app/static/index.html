@@ -142,7 +142,8 @@
     <div class="grid" id="field-grid"></div>
     <div class="actions">
       <button class="run" id="run-btn">Run screening</button>
-      <button class="fill-sample" id="sample-btn">Fill sample patient</button>
+      <button class="fill-sample" id="sample-pos-btn">Fill: disease-positive case</button>
+      <button class="fill-sample" id="sample-neg-btn">Fill: healthy case</button>
     </div>
     <div class="err" id="err"></div>
     <div class="result" id="result">
@@ -177,10 +178,22 @@ const FIELD_LABELS = {
   slope:"ST Slope (0-2)", ca:"Major Vessels (0-3)", thal:"Thalassemia (0-3)",
 };
 
+// Real rows pulled from the cleaned training data (data/*_clean.csv), one
+// disease-positive and one disease-negative case per dataset -- not
+// synthetic placeholder values.
 const SAMPLES = {
-  diabetes: {pregnancies:2, glucose:130, blood_pressure:70, skin_thickness:28, insulin:100, bmi:32.5, diabetes_pedigree:0.45, age:38},
-  heart: {age:58, sex:1, cp:2, trestbps:140, chol:230, fbs:0, restecg:1, thalach:150, exang:0, oldpeak:1.2, slope:1, ca:0, thal:2},
-  breast_cancer: null, // filled dynamically from feature list (30 features) with typical benign-ish values
+  diabetes: {
+    positive: {pregnancies:5, glucose:166, blood_pressure:76, skin_thickness:29, insulin:125, bmi:45.7, diabetes_pedigree:0.34, age:27},
+    negative: {pregnancies:4, glucose:99, blood_pressure:72, skin_thickness:17, insulin:125, bmi:25.6, diabetes_pedigree:0.294, age:28},
+  },
+  heart: {
+    positive: {age:41, sex:1, cp:1, trestbps:135, chol:203, fbs:0, restecg:1, thalach:132, exang:0, oldpeak:0, slope:1, ca:0, thal:1},
+    negative: {age:61, sex:1, cp:0, trestbps:140, chol:207, fbs:0, restecg:0, thalach:138, exang:1, oldpeak:1.9, slope:2, ca:1, thal:3},
+  },
+  breast_cancer: {
+    positive: {mean_radius:18.45, mean_texture:21.91, mean_perimeter:120.2, mean_area:1075, mean_smoothness:0.0943, mean_compactness:0.09709, mean_concavity:0.1153, mean_concave_points:0.06847, mean_symmetry:0.1692, mean_fractal_dimension:0.05727, radius_error:0.5959, texture_error:1.202, perimeter_error:3.766, area_error:68.35, smoothness_error:0.006001, compactness_error:0.01422, concavity_error:0.02855, concave_points_error:0.009148, symmetry_error:0.01492, fractal_dimension_error:0.002205, worst_radius:22.52, worst_texture:31.39, worst_perimeter:145.6, worst_area:1590, worst_smoothness:0.1465, worst_compactness:0.2275, worst_concavity:0.3965, worst_concave_points:0.1379, worst_symmetry:0.3109, worst_fractal_dimension:0.0761},
+    negative: {mean_radius:11.43, mean_texture:17.31, mean_perimeter:73.66, mean_area:398, mean_smoothness:0.1092, mean_compactness:0.09486, mean_concavity:0.02031, mean_concave_points:0.01861, mean_symmetry:0.1645, mean_fractal_dimension:0.06562, radius_error:0.2843, texture_error:1.908, perimeter_error:1.937, area_error:21.38, smoothness_error:0.006664, compactness_error:0.01735, concavity_error:0.01158, concave_points_error:0.00952, symmetry_error:0.02282, fractal_dimension_error:0.003526, worst_radius:12.78, worst_texture:26.76, worst_perimeter:82.66, worst_area:503, worst_smoothness:0.1413, worst_compactness:0.1792, worst_concavity:0.07708, worst_concave_points:0.06402, worst_symmetry:0.2584, worst_fractal_dimension:0.08096},
+  },
 };
 
 let DISEASES = {};
@@ -223,19 +236,16 @@ function selectDisease(key){
   });
 }
 
-document.getElementById('sample-btn').onclick = () => {
-  const info = DISEASES[current];
-  let sample = SAMPLES[current];
-  if (!sample && current === 'breast_cancer') {
-    // reasonable mid-range placeholder values across all 30 features
-    sample = {};
-    info.feature_names.forEach(f => sample[f] = 14.0);
-  }
+function fillSample(cls){
+  const sample = SAMPLES[current][cls];
   document.querySelectorAll('#field-grid input').forEach(inp => {
     const f = inp.dataset.field;
     if (sample[f] !== undefined) inp.value = sample[f];
   });
-};
+}
+
+document.getElementById('sample-pos-btn').onclick = () => fillSample('positive');
+document.getElementById('sample-neg-btn').onclick = () => fillSample('negative');
 
 document.getElementById('run-btn').onclick = async () => {
   const errEl = document.getElementById('err');
