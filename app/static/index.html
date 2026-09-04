@@ -122,6 +122,31 @@
   footer{margin-top:36px; font-family:var(--mono); font-size:11px; color:var(--ink-soft); line-height:1.6;}
   footer .warn{color:var(--amber);}
   .err{color:var(--alert); font-family:var(--mono); font-size:12.5px; margin-top:14px;}
+
+  .history-panel{margin-top:26px;}
+  .clear-history{
+    font-family:var(--mono); font-size:12px; color:var(--ink-soft); background:none;
+    border:1px dashed var(--paper-line); padding:8px 14px; border-radius:2px; cursor:pointer;
+  }
+  .clear-history:hover{border-color:var(--alert); color:var(--alert);}
+  .history-empty{color:var(--ink-soft); font-family:var(--mono); font-size:12.5px; padding:6px 0 2px;}
+  .history-table{width:100%; border-collapse:collapse; font-family:var(--mono); font-size:12.5px; margin-top:6px;}
+  .history-table th{
+    text-align:left; font-size:10.5px; letter-spacing:0.04em; text-transform:uppercase;
+    color:var(--ink-soft); border-bottom:1.5px solid var(--paper-line); padding:8px 10px;
+  }
+  .history-table td{border-bottom:1px solid var(--paper-line); padding:9px 10px; vertical-align:top; color:var(--ink);}
+  .history-table tr:last-child td{border-bottom:none;}
+  .hist-verdict{font-weight:600;}
+  .hist-verdict.normal{color:var(--normal);}
+  .hist-verdict.alert{color:var(--alert);}
+  .hist-toggle{
+    font-family:var(--mono); font-size:11px; color:var(--ink-soft); background:none;
+    border:1px solid var(--paper-line); padding:3px 8px; border-radius:20px; cursor:pointer;
+  }
+  .hist-toggle:hover{border-color:var(--ink-soft); color:var(--ink);}
+  .hist-inputs-row td{background:#F5F7F6; padding:10px 14px; font-size:11.5px; color:var(--ink-soft);}
+  .hist-inputs-row.hidden{display:none;}
 </style>
 </head>
 <body>
@@ -159,6 +184,21 @@
       </div>
       <div class="gauge"><div class="gauge-fill" id="gauge-fill"></div></div>
     </div>
+  </div>
+
+  <div class="panel history-panel" id="history-panel">
+    <div class="panel-head">
+      <h2>Prediction History</h2>
+      <button class="clear-history" id="clear-history-btn">Clear history</button>
+    </div>
+    <div class="panel-desc">Last 50 predictions run against this server, most recent first.</div>
+    <div class="history-empty" id="history-empty">No predictions yet.</div>
+    <table class="history-table" id="history-table" style="display:none;">
+      <thead>
+        <tr><th>Time</th><th>Disease</th><th>Verdict</th><th>Probability</th><th></th></tr>
+      </thead>
+      <tbody id="history-tbody"></tbody>
+    </table>
   </div>
 
   <footer>
@@ -265,6 +305,7 @@ document.getElementById('run-btn').onclick = async () => {
     const data = await res.json();
     if (!res.ok) { errEl.textContent = data.error || 'Prediction failed.'; return; }
     showResult(data);
+    refreshHistory();
   } catch(e) {
     errEl.textContent = 'Could not reach the prediction server.';
   } finally {
@@ -288,7 +329,65 @@ function showResult(data){
   result.classList.add('show');
 }
 
+function formatTimestamp(iso){
+  const d = new Date(iso);
+  return isNaN(d) ? iso : d.toLocaleString();
+}
+
+function renderHistory(rows){
+  const tbody = document.getElementById('history-tbody');
+  const table = document.getElementById('history-table');
+  const empty = document.getElementById('history-empty');
+  tbody.innerHTML = '';
+
+  if (!rows.length) {
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  table.style.display = 'table';
+
+  rows.forEach(row => {
+    const isAlert = row.prediction_label === 'Disease likely present';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${formatTimestamp(row.timestamp)}</td>
+      <td>${row.disease}</td>
+      <td class="hist-verdict ${isAlert ? 'alert' : 'normal'}">${isAlert ? '⚠' : '✓'} ${row.prediction_label}</td>
+      <td>${(row.probability*100).toFixed(1)}%</td>
+      <td><button class="hist-toggle" type="button">view inputs</button></td>
+    `;
+    tbody.appendChild(tr);
+
+    const detailTr = document.createElement('tr');
+    detailTr.className = 'hist-inputs-row hidden';
+    const inputsText = Object.entries(row.inputs).map(([k, v]) => `${k} = ${v}`).join('   ·   ');
+    detailTr.innerHTML = `<td colspan="5">${inputsText}</td>`;
+    tbody.appendChild(detailTr);
+
+    tr.querySelector('.hist-toggle').onclick = () => detailTr.classList.toggle('hidden');
+  });
+}
+
+async function refreshHistory(){
+  try {
+    const res = await fetch('/api/history');
+    if (!res.ok) return;
+    renderHistory(await res.json());
+  } catch(e) {
+    // history is a secondary feature -- don't block the main screening flow on it
+  }
+}
+
+document.getElementById('clear-history-btn').onclick = async () => {
+  if (!confirm('Clear all prediction history? This cannot be undone.')) return;
+  await fetch('/api/history', { method: 'DELETE' });
+  refreshHistory();
+};
+
 init();
+refreshHistory();
 </script>
 </body>
 </html>

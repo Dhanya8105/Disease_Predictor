@@ -4,17 +4,46 @@ Loads the actual trained models (no mocking) and serves live predictions.
 """
 import json
 import os
+import sqlite3
+from contextlib import closing
+from datetime import datetime, timezone
 import joblib
 import numpy as np
 from flask import Flask, request, jsonify, send_from_directory
 
 MODEL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "models")
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "history.db")
 
 app = Flask(__name__, static_folder="static")
 
 DISEASES = ["diabetes", "heart", "breast_cancer"]
 
 _cache = {}
+
+
+def get_db():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def init_db():
+    with closing(get_db()) as conn, conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS predictions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TEXT,
+                disease TEXT,
+                model_used TEXT,
+                inputs_json TEXT,
+                prediction INTEGER,
+                prediction_label TEXT,
+                probability REAL
+            )
+        """)
+
+
+init_db()
 
 
 def load_disease(key):
@@ -67,13 +96,68 @@ def predict(disease_key):
     pred = int(model.predict(X_scaled)[0])
     proba = float(model.predict_proba(X_scaled)[0, 1])
 
-    return jsonify({
+    response = {
         "disease": meta["disease"],
         "model_used": meta["best_model"],
         "prediction": pred,
         "prediction_label": "Disease likely present" if pred == 1 else "No disease indicated",
         "probability": round(proba, 4),
-    })
+    }
+
+    with closing(get_db()) as conn, conn:
+        conn.execute(
+            "INSERT INTO predictions "
+            "(timestamp, disease, model_used, inputs_json, prediction, prediction_label, probability) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (
+                datetime.now(timezone.utc).isoformat(),
+                response["disease"],
+                response["model_used"],
+                json.dumps(payload),
+                response["prediction"],
+                response["prediction_label"],
+                response["probability"],
+            ),
+        )
+
+    return jsonify(response)
+
+
+@app.route("/api/history", methods=["GET"])
+def get_history():
+    with closing(get_db()) as conn:
+        rows = conn.execute(
+            "SELECT id, timestamp, disease, model_used, inputs_json, prediction_label, probability "
+            "FROM predictions ORDER BY id DESC LIMIT 50"
+        ).fetchall()
+    return jsonify([
+        {
+            "id": row["id"],
+            "timestamp": row["timestamp"],
+            "disease": row["disease"],
+            "model_used": row["model_used"],
+            "inputs": json.loads(row["inputs_json"]),
+            "prediction_label": row["prediction_label"],
+            "probability": row["probability"],
+        }
+        for row in rows
+    ])
+
+
+@app.route("/api/history/<int:record_id>", methods=["DELETE"])
+def delete_history_record(record_id):
+    with closing(get_db()) as conn, conn:
+        cur = conn.execute("DELETE FROM predictions WHERE id = ?", (record_id,))
+    if cur.rowcount == 0:
+        return jsonify({"error": f"no record with id {record_id}"}), 404
+    return jsonify({"deleted": record_id})
+
+
+@app.route("/api/history", methods=["DELETE"])
+def clear_history():
+    with closing(get_db()) as conn, conn:
+        conn.execute("DELETE FROM predictions")
+    return jsonify({"cleared": True})
 
 
 if __name__ == "__main__":
